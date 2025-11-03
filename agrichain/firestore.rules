@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow admin user full access for data management scripts
+    match /{document=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email == 'admin@agrichain.com';
+    }
+    
+    // Allow authenticated users to read and write user documents
+    // Users can access documents where firebaseUid matches their auth.uid or they are admin
+    match /users/{userId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid || 
+         request.auth.token.email == 'admin@agrichain.com');
+    }
+    
+    // Allow unauthenticated email-based queries for signup/signin validation
+    // This is necessary for checking if user exists during authentication flows
+    match /users/{userId} {
+      allow read: if true; // Allow reading for email existence checks
+      allow list: if true; // Allow querying by email during auth flows
+    }
+    
+    // Allow authenticated users to read and write their own profile documents
+    match /profiles/{userId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid ||
+         request.auth.token.email == 'admin@agrichain.com');
+    }
+    
+    // Allow authenticated users to read and write profile_data documents
+    match /profile_data/{profileId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid ||
+         request.auth.token.email == 'admin@agrichain.com');
+    }
+    
+    // Allow authenticated users to query profile_data by userId
+    match /profile_data/{profileId} {
+      allow read: if request.auth != null;
+      allow list: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read and write crop documents
+    match /crops/{cropId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid ||
+         request.auth.token.email == 'admin@agrichain.com');
+      allow list: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read and write loan documents
+    match /loans/{loanId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read and write loan offer documents
+    match /loan_offers/{offerId} {
+      allow read, write: if request.auth != null;
+      // Allow unauthenticated writes for mock data initialization
+      allow write: if request.resource.data.description == 'Mock loan offer for testing purposes';
+      allow delete: if resource.data.description == 'Mock loan offer for testing purposes';
+    }
+    
+    // Allow authenticated users to read and write KYC documents
+    match /kyc_data/{kycId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid ||
+         request.auth.token.email == 'admin@agrichain.com');
+    }
+    
+    // Allow authenticated users to read and write security logs (for their own data)
+    match /security_logs/{logId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid ||
+         request.auth.token.email == 'admin@agrichain.com');
+    }
+    
+    // Allow authenticated users to read app configuration
+    match /app_config/{configId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@agrichain.com';
+    }
+    
+    // Allow authenticated users to read and write documents where they are the owner
+    match /{document=**} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.firebaseUid == request.auth.uid ||
+         request.auth.token.email == 'admin@agrichain.com');
+    }
+  }
+}
