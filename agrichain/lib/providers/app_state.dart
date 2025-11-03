@@ -79,14 +79,20 @@ class AppState extends ChangeNotifier {
     if (user != null) {
       await _loadUserData(user.uid);
     } else {
+      // User signed out - clear all data and reset state
       _currentUser = null;
       _clearData();
+      _setLoading(false); // Ensure loading state is reset
+      _clearError(); // Clear any previous errors
     }
     notifyListeners();
   }
 
   // Load user data from Firestore
   Future<void> _loadUserData(String firebaseUid) async {
+    _setLoading(true);
+    _clearError();
+    
     try {
       debugPrint('🔍 Loading user data for Firebase UID: $firebaseUid');
       
@@ -130,6 +136,7 @@ class AppState extends ChangeNotifier {
           metadata: Map<String, dynamic>.from(userData['metadata'] ?? {}),
         );
         await _loadUserRelatedData();
+        debugPrint('✅ User profile loaded: ${_currentUser!.name} (${_currentUser!.userType.name})');
       } else {
         debugPrint('❌ User data not found after retries for Firebase UID: $firebaseUid');
         _setError('User profile not found. Please complete your registration.');
@@ -137,6 +144,8 @@ class AppState extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error loading user data: $e');
       _setError('Failed to load user data: $e');
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -407,7 +416,11 @@ class AppState extends ChangeNotifier {
 
   void clearUser() {
     _currentUser = null;
+    _firebaseUser = null;
     _clearData();
+    _setLoading(false);
+    _clearError();
+    notifyListeners();
   }
 
   Future<void> loadUserData(String firebaseUid) async {

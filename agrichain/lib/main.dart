@@ -158,11 +158,8 @@ class _AgriChainAppState extends State<AgriChainApp> {
         }
         
         if (snapshot.hasData && snapshot.data != null) {
-          // User is signed in, load their data and show main screen
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final appState = Provider.of<AppState>(context, listen: false);
-            appState.loadUserData(snapshot.data!.uid);
-          });
+          // User is signed in, show main screen
+          // Note: AppState._onAuthStateChanged will handle loading user data
           return const MainScreen();
         } else {
           // User is not signed in, show login screen
@@ -491,6 +488,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return Consumer<AppState>(
       builder: (context, appState, child) {
         final user = appState.currentUser;
+        final firebaseUser = FirebaseAuth.instance.currentUser;
         
         // Show loading while user data is being loaded
         if (appState.isLoading) {
@@ -503,9 +501,72 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           );
         }
         
-        // If no user data but Firebase user exists, redirect to login
-        if (user == null) {
+        // If no user data but Firebase user exists, try loading user data
+        if (user == null && firebaseUser != null) {
+          // Trigger user data loading if not already loading
+          if (!appState.isLoading) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              appState.loadUserData(firebaseUser.uid);
+            });
+          }
+          return const Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: AppTheme.primaryGreen,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading your profile...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        // If no Firebase user, show login message
+        if (firebaseUser == null) {
+          return const Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.login,
+                    size: 64,
+                    color: AppTheme.primaryGreen,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Please log in to continue',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        // If user data failed to load, show error and redirect to login
+        if (user == null && appState.error != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(appState.error!),
+                backgroundColor: AppTheme.error,
+                duration: const Duration(seconds: 3),
+              ),
+            );
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -520,7 +581,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           );
         }
 
-        final isBuyer = user.userType == UserType.buyer;
+        final isBuyer = user?.userType == UserType.buyer;
         final screens = isBuyer ? _buyerScreens : _farmerScreens;
         final navItems = isBuyer ? _buyerNavItems : _farmerNavItems;
 

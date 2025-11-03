@@ -101,8 +101,26 @@ class _LoginScreenState extends State<LoginScreen>
         final appState = Provider.of<AppState>(context, listen: false);
         await appState.loadUserData(credential.user!.uid);
         
-        debugPrint('✅ Login complete, user data loaded');
-        HapticFeedback.lightImpact();
+        // Check if user data was loaded successfully
+        if (appState.currentUser != null) {
+          debugPrint('✅ Login complete, user data loaded successfully');
+          HapticFeedback.lightImpact();
+          
+          // Small delay to ensure state is properly updated
+          await Future.delayed(const Duration(milliseconds: 100));
+          
+          // The StreamBuilder in main.dart will handle navigation automatically
+        } else if (appState.error != null) {
+          debugPrint('❌ Failed to load user data: ${appState.error}');
+          setState(() {
+            _errorMessage = appState.error;
+          });
+        } else {
+          debugPrint('⚠️ User data not found, but no error reported');
+          setState(() {
+            _errorMessage = 'User profile not found. Please contact support.';
+          });
+        }
       }
     } on FirebaseAuthException catch (e) {
       debugPrint('❌ Firebase Auth error: ${e.code} - ${e.message}');
