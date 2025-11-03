@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/app_state.dart';
 import '../models/firestore_models.dart';
 import '../theme/app_theme.dart';
@@ -14,6 +15,7 @@ import '../screens/wallet_connection_screen.dart';
 import '../screens/transaction_history_screen.dart';
 import '../screens/mint_land_nft_screen.dart';
 import '../screens/mint_crop_nft_screen.dart';
+import '../screens/login_screen.dart';
 import '../config/app_config.dart';
 import '../services/profile_service.dart';
 import '../services/wallet_service.dart';
@@ -1296,15 +1298,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Implement logout functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logged out successfully'),
-                  backgroundColor: AppTheme.primaryGreen,
+              
+              // Show loading indicator
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
                 ),
               );
+              
+              try {
+                // Clear app state first
+                final appState = Provider.of<AppState>(context, listen: false);
+                appState.clearUser();
+                
+                // Sign out from Firebase
+                await FirebaseAuth.instance.signOut();
+                
+                // Close loading dialog
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  
+                  // Navigate to login screen and clear navigation stack
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                debugPrint('❌ Logout error: $e');
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Logout failed: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
