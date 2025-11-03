@@ -4,12 +4,53 @@ Production-ready Flutter app for an agricultural marketplace with ratings, loans
 
 This README documents the project structure, setup, environment, build/run instructions, and key modules so that tools and contributors can understand and work with the codebase effectively.
 
+## Unique value propositions (USPs)
+
+- Trust-first marketplace: farmer and buyer reputation scored with transparent rating summaries and fraud-resistant design.
+- Mobile-first, multi-platform reach: single codebase targets Android, Web, and Desktop.
+- Ready-to-ship backend: Firebase Auth, Firestore, Storage, Messaging, Analytics, and Crashlytics already wired.
+- Web3 optionality: contracts and deploy scripts available for provenance, escrow, or audits without forcing blockchain on all users.
+- Extensible architecture: clean separation of models, services, providers, screens, and widgets.
+
+## Feature highlights
+
+- Onboarding and authentication (email/phone/social once configured via Firebase)
+- Marketplace listing cards with responsive layouts and media storage
+- User profiles with role-specific data (farmer, buyer, aggregator)
+- Ratings and reviews with aggregates (counts, averages, breakdowns)
+- Loans module scaffolding for agri-finance flows
+- Notifications (via FCM) and in-app toasts/snackbars
+- Crash and analytics instrumentation (Firebase)
+- Optional Web3 hooks (web3dart/wallet) for contract interactions
+- Payments integration readiness (Razorpay plugin indicated in artifacts)
+
+## Tech stack at a glance
+
+- Flutter (Dart), Material 3 UI, responsive layouts
+- State management: Provider
+- Firebase: Auth, Firestore, Storage, Messaging (FCM), Analytics, Crashlytics
+- Local notifications: flutter_local_notifications
+- Optional blockchain: web3dart, Solidity contracts, Remix + ethers.js/web3.js scripts
+- Tooling: Flutter Test, Dart Analyze/Format
+
 ## Overview
 
 - Cross-platform Flutter app targeting Android, Web, Windows, macOS, and Linux.
 - Uses Firebase (Firestore, Auth, Storage, Messaging, Crashlytics) for backend services.
 - Optional blockchain integration via `web3dart` and `wallet` with example smart contracts and deployment scripts.
 - State management via `Provider` (see `lib/providers/app_state.dart`).
+
+## Architecture overview
+
+Layered approach:
+- Models (pure data, Firestore serialization) → `lib/models`
+- Services (APIs/DB/Platform) → `lib/services`
+- Providers (state + business logic) → `lib/providers`
+- UI Screens (feature pages) → `lib/screens`
+- UI Widgets (reusable components) → `lib/widgets`
+- Theme/Config/Utils → `lib/theme`, `lib/config`, `lib/utils`
+
+Data flows: UI → Provider methods → Services (Firestore/others) → Models; Providers notify listeners back to UI.
 
 ## Quick Start
 
@@ -63,8 +104,8 @@ Web assets:
 
 ## Configuration
 
-Environment variables:
-- See `agrichain/.env.example` for required keys and formats.
+Environment variables and secrets:
+- Keep secrets out of git. If you use an `.env` file, do not commit it; provide an example template for contributors.
 
 Firebase config:
 - Android: place `google-services.json` in `agrichain/android/app/`.
@@ -123,6 +164,12 @@ Windows desktop:
 - Linting: `flutter analyze`
 - Format: `dart format .`
 
+Recommended test scope:
+- Unit tests for services (Firestore reads/writes)
+- Provider tests for rating aggregation/business logic
+- Widget tests for key components (cards, rating summary)
+- Golden tests for stable visuals (optional)
+
 ## Troubleshooting
 
 - Android build fails due to shrink/ProGuard:
@@ -155,6 +202,16 @@ Windows desktop:
   - `DIGILOCKER_SANDBOX_SETUP.md`
   - `INFURA_SETUP_GUIDE.md`
   - `MOCK_DIGILOCKER_DEMO_GUIDE.md`
+
+## Roadmap (suggested)
+
+- Role-based dashboards and permissions (farmer, buyer, aggregator)
+- Advanced search and filtering in marketplace
+- Escrow and dispute flows (optional on-chain)
+- Offline caching and sync for rural connectivity
+- Multi-language support (intl)
+- Payment integrations (confirm Razorpay/UPI flows)
+- Hardening: E2E tests, performance profiling, accessibility pass
 
 ---
 For contributions, keep changes minimal and consistent with existing patterns. Focus on clear feature boundaries, avoid unrelated refactors, and update documentation when behavior or interfaces change.

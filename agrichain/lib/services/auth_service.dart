@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/firestore_models.dart';
-import '../providers/app_state.dart';
-import '../config/config_manager.dart';
-import 'firebase_service.dart';
 
 class AuthResult {
   final bool success;

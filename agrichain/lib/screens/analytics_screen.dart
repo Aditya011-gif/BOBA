@@ -404,7 +404,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       child: Column(
         children: [
           // Pie chart representation (simplified)
-          Container(
+          SizedBox(
             height: 120,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -462,7 +462,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ),
               ],
             ),
-          )).toList(),
+          )),
         ],
       ),
     );

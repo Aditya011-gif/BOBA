@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
-import '../lib/services/blockchain_service.dart';
-import '../lib/config/app_config.dart';
+import 'package:agrichain/services/blockchain_service.dart';
+import 'package:agrichain/config/app_config.dart';
 
 void main() {
   group('Infura Integration Tests', () {

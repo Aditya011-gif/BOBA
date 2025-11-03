@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/services/mock_digilocker_service.dart';
+import 'package:agrichain/services/mock_digilocker_service.dart';
 
 void main() {
   group('Mock DigiLocker Service Tests', () {

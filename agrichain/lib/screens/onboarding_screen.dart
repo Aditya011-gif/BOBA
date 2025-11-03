@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
-import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../models/crop.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
-import '../utils/crop_data_helper.dart';
 
 class CropCard extends StatelessWidget {
   final FirestoreCrop crop;
@@ -370,7 +369,7 @@ class CropCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                'MSP: ₹${pricing.msp?.toStringAsFixed(0) ?? 'N/A'}',
+                'MSP: ₹${pricing.msp.toStringAsFixed(0) ?? 'N/A'}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppTheme.primaryGreen,
                   fontSize: 8,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/app_state.dart';
@@ -670,7 +669,7 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
+              SizedBox(
                 height: 150,
                 child: ListView.builder(
                   itemCount: bids.length,
@@ -1308,7 +1307,7 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
             Expanded(
               child: PaymentMethodSelector(
                 amount: totalAmount,
-                description: 'Purchase of ${widget.crop.name} (${_quantity} kg)',
+                description: 'Purchase of ${widget.crop.name} ($_quantity kg)',
                 metadata: {
                   'crop_id': widget.crop.id,
                   'crop_name': widget.crop.name,
@@ -1756,7 +1755,7 @@ class _PriceComparisonTabState extends State<_PriceComparisonTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedCropType,
+                      initialValue: _selectedCropType,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1814,7 +1813,7 @@ class _PriceComparisonTabState extends State<_PriceComparisonTab> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _sortBy,
+                      initialValue: _sortBy,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),

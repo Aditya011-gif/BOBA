@@ -2,6 +2,7 @@
 /// 
 /// This file contains sandbox-specific configuration for DigiLocker integration.
 /// Replace the placeholder values with your actual sandbox credentials.
+library;
 
 class DigiLockerSandboxConfig {
   // API Setu Sandbox Environment URLs
@@ -164,7 +165,7 @@ DigiLocker Sandbox Setup Instructions:
 
 4. Configure Callback URL:
    - In DigiLocker Developer Portal, set callback URL to:
-     ${sandboxRedirectUri}
+     $sandboxRedirectUri
    - Ensure this matches your app's deep link configuration
 
 5. Test Integration:

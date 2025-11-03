@@ -5,7 +5,6 @@ import '../theme/app_theme.dart';
 import '../services/blockchain_service.dart';
 import '../widgets/enhanced_app_bar.dart';
 import '../models/crop.dart';
-import '../models/firestore_models.dart';
 
 enum CropAction { sell }
 

@@ -694,7 +694,7 @@ class _LoansScreenState extends State<LoansScreen>
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: Colors.green.shade600),

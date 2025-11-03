@@ -64,8 +64,8 @@ class _MintCropNFTScreenState extends State<MintCropNFTScreen> {
   DateTime _testingDate = DateTime.now();
 
   // Document images
-  List<String> _cropImages = [];
-  List<String> _certificateImages = [];
+  final List<String> _cropImages = [];
+  final List<String> _certificateImages = [];
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _cropCategories = ['Grains', 'Vegetables', 'Fruits', 'Pulses', 'Spices', 'Cash Crops'];
@@ -294,7 +294,7 @@ class _MintCropNFTScreenState extends State<MintCropNFTScreen> {
               subtitle: const Text('Is this an organically grown crop?'),
               value: _isOrganic,
               onChanged: (value) => setState(() => _isOrganic = value),
-              activeColor: AppTheme.primaryGreen,
+              activeThumbColor: AppTheme.primaryGreen,
             ),
           ],
         ),
@@ -404,7 +404,7 @@ class _MintCropNFTScreenState extends State<MintCropNFTScreen> {
             subtitle: const Text('Have quality tests been conducted?'),
             value: _hasQualityTests,
             onChanged: (value) => setState(() => _hasQualityTests = value),
-            activeColor: AppTheme.primaryGreen,
+            activeThumbColor: AppTheme.primaryGreen,
           ),
           
           if (_hasQualityTests) ...[
@@ -763,7 +763,7 @@ class _MintCropNFTScreenState extends State<MintCropNFTScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,

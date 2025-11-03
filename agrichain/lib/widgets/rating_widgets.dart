@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../providers/app_state.dart';
 import '../models/firestore_models.dart';
 
 // Star Rating Display Widget (Read-only)
@@ -12,14 +11,14 @@ class StarRatingDisplay extends StatelessWidget {
   final bool showRating;
 
   const StarRatingDisplay({
-    Key? key,
+    super.key,
     required this.rating,
     this.starCount = 5,
     this.size = 20.0,
     this.activeColor,
     this.inactiveColor,
     this.showRating = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -79,14 +78,14 @@ class StarRatingInput extends StatefulWidget {
   final ValueChanged<double>? onRatingChanged;
 
   const StarRatingInput({
-    Key? key,
+    super.key,
     this.initialRating = 0.0,
     this.starCount = 5,
     this.size = 30.0,
     this.activeColor,
     this.inactiveColor,
     this.onRatingChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<StarRatingInput> createState() => _StarRatingInputState();
@@ -134,10 +133,10 @@ class ReviewCard extends StatelessWidget {
   final bool showUserInfo;
 
   const ReviewCard({
-    Key? key,
+    super.key,
     required this.rating,
     this.showUserInfo = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -252,10 +251,10 @@ class RatingSummary extends StatelessWidget {
   final String title;
 
   const RatingSummary({
-    Key? key,
+    super.key,
     required this.stats,
     required this.title,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -387,11 +386,11 @@ class CompactRatingDisplay extends StatelessWidget {
   final double size;
 
   const CompactRatingDisplay({
-    Key? key,
+    super.key,
     required this.rating,
     required this.totalRatings,
     this.size = 16.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

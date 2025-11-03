@@ -14,13 +14,13 @@ class PaymentMethodSelector extends StatefulWidget {
   final Map<String, dynamic>? metadata;
 
   const PaymentMethodSelector({
-    Key? key,
+    super.key,
     required this.amount,
     required this.description,
     required this.onPaymentSuccess,
     required this.onPaymentFailure,
     this.metadata,
-  }) : super(key: key);
+  });
 
   @override
   State<PaymentMethodSelector> createState() => _PaymentMethodSelectorState();
@@ -285,7 +285,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          value: _selectedBank,
+          initialValue: _selectedBank,
           decoration: const InputDecoration(
             labelText: 'Select Bank',
             prefixIcon: Icon(Icons.account_balance),
@@ -319,7 +319,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          value: _selectedWallet,
+          initialValue: _selectedWallet,
           decoration: const InputDecoration(
             labelText: 'Select Wallet',
             prefixIcon: Icon(Icons.account_balance_wallet),

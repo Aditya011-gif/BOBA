@@ -11,9 +11,9 @@ class ProfileEditScreen extends StatefulWidget {
   final Map<String, dynamic>? profileData;
 
   const ProfileEditScreen({
-    Key? key,
+    super.key,
     this.profileData,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -297,7 +297,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _selectedState,
+                initialValue: _selectedState,
                 decoration: const InputDecoration(
                   labelText: 'State',
                   border: OutlineInputBorder(),

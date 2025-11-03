@@ -7,7 +7,6 @@ import '../providers/app_state.dart';
 import '../models/firestore_models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
-import '../widgets/rating_widgets.dart';
 import '../screens/rating_screen.dart';
 import '../screens/debug_sample_users_screen.dart';
 import '../screens/profile_edit_screen.dart';

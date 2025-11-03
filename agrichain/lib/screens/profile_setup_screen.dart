@@ -47,8 +47,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   bool _isLoading = false;
   int _currentStep = 0;
   String? _selectedState;
-  List<String> _selectedCrops = [];
-  List<String> _selectedServices = [];
+  final List<String> _selectedCrops = [];
+  final List<String> _selectedServices = [];
   
   // Profile Image
   String? _profileImagePath;

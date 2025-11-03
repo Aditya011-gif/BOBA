@@ -659,7 +659,7 @@ class _LoanScreenState extends State<LoanScreen>
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: urgency,
+                      initialValue: urgency,
                       decoration: const InputDecoration(
                         labelText: 'Urgency',
                         border: OutlineInputBorder(),

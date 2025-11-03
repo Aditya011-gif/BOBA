@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/firestore_models.dart';
 import '../services/database_service.dart';
 import '../services/auth_service.dart';
-import '../data/initialize_mock_data.dart';
 
 class AppState extends ChangeNotifier {
   // Firebase instances

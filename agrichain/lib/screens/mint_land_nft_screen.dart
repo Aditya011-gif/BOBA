@@ -59,7 +59,7 @@ class _MintLandNFTScreenState extends State<MintLandNFTScreen> {
   DateTime _valuationDate = DateTime.now();
 
   // Document images
-  List<String> _documentImages = [];
+  final List<String> _documentImages = [];
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _landTypes = ['Agricultural', 'Residential', 'Commercial', 'Industrial'];
@@ -313,7 +313,7 @@ class _MintLandNFTScreenState extends State<MintLandNFTScreen> {
               subtitle: const Text('Does the land have irrigation facilities?'),
               value: _hasIrrigation,
               onChanged: (value) => setState(() => _hasIrrigation = value),
-              activeColor: AppTheme.primaryGreen,
+              activeThumbColor: AppTheme.primaryGreen,
             ),
           ],
         ),
@@ -372,7 +372,7 @@ class _MintLandNFTScreenState extends State<MintLandNFTScreen> {
             subtitle: const Text('Are there any ongoing legal disputes?'),
             value: _hasLegalDisputes,
             onChanged: (value) => setState(() => _hasLegalDisputes = value),
-            activeColor: AppTheme.primaryGreen,
+            activeThumbColor: AppTheme.primaryGreen,
           ),
           
           SwitchListTile(
@@ -380,7 +380,7 @@ class _MintLandNFTScreenState extends State<MintLandNFTScreen> {
             subtitle: const Text('Is the property under any encumbrance?'),
             value: _isEncumbered,
             onChanged: (value) => setState(() => _isEncumbered = value),
-            activeColor: AppTheme.primaryGreen,
+            activeThumbColor: AppTheme.primaryGreen,
           ),
         ],
       ),
@@ -697,7 +697,7 @@ class _MintLandNFTScreenState extends State<MintLandNFTScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,

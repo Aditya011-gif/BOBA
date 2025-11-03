@@ -37,8 +37,8 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
   String _collateralType = 'none'; // none, land, crop, both
   List<LandNFT> _availableLandNFTs = [];
   List<CropNFT> _availableCropNFTs = [];
-  List<String> _selectedLandNFTs = [];
-  List<String> _selectedCropNFTs = [];
+  final List<String> _selectedLandNFTs = [];
+  final List<String> _selectedCropNFTs = [];
   double _totalCollateralValue = 0.0;
 
   final List<String> _purposes = [
@@ -884,7 +884,7 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,

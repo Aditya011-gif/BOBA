@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import '../models/firestore_models.dart';
 import 'mock_crop_listings.dart';
 import 'mock_loan_offers.dart';
 

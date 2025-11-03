@@ -262,7 +262,7 @@ class KycService {
             userId: userId,
             event: 'AADHAAR_VERIFIED',
             details: {
-              'aadhaarNumber': aadhaarNumber.substring(0, 4) + 'XXXX' + aadhaarNumber.substring(8),
+              'aadhaarNumber': '${aadhaarNumber.substring(0, 4)}XXXX${aadhaarNumber.substring(8)}',
               'timestamp': DateTime.now().toIso8601String(),
             },
           );
