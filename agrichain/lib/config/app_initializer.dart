@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -134,15 +135,19 @@ class AppInitializer {
       final auth = FirebaseAuth.instance;
       if (auth.currentUser != null) {
         try {
-          // Test basic Firestore connectivity with authenticated user
+          // Test basic Firestore connectivity with authenticated user with timeout
           final testDoc = await FirebaseFirestore.instance
               .collection('_test')
               .doc('connectivity')
-              .get();
+              .get()
+              .timeout(
+                const Duration(seconds: 5),
+                onTimeout: () => throw TimeoutException('Firestore connection timeout'),
+              );
           _initializationResults['firestore_connectivity'] = 'Healthy';
         } catch (e) {
           debugPrint('Firestore connectivity test failed (user authenticated): $e');
-          _initializationResults['firestore_connectivity'] = 'Limited (auth required)';
+          _initializationResults['firestore_connectivity'] = 'Offline Mode';
         }
       } else {
         _initializationResults['firestore_connectivity'] = 'Ready (auth required)';
@@ -184,15 +189,19 @@ class AppInitializer {
         
         // Only test Firestore connectivity if user is authenticated
         if (auth.currentUser != null) {
-          // Test basic Firestore connectivity with authenticated user
-          await firestore.collection('_health_check').doc('test').get();
+          // Test basic Firestore connectivity with authenticated user with timeout
+          await firestore.collection('_health_check').doc('test').get().timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => throw TimeoutException('Firestore health check timeout'),
+          );
           healthResults['firestore'] = 'Healthy';
         } else {
           // Firestore is ready but requires authentication
           healthResults['firestore'] = 'Ready (auth required)';
         }
       } catch (e) {
-        healthResults['firestore'] = 'Error: $e';
+        healthResults['firestore'] = 'Offline Mode';
+        debugPrint('Firestore health check failed: $e');
       }
       
       // Configuration health check

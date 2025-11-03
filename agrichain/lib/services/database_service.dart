@@ -26,21 +26,32 @@ class DatabaseService {
   /// Initialize Firestore settings
   Future<void> initialize() async {
     try {
-      // Configure Firestore settings
-      await _firestore.enableNetwork();
+      // Configure Firestore settings with timeout
+      await _firestore.enableNetwork().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⚠️ Firestore network enable timeout - continuing in offline mode');
+        },
+      );
       
       // Set up offline persistence for better user experience
       if (!kIsWeb) {
-        _firestore.settings = const Settings(
-          persistenceEnabled: true,
-          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-        );
+        try {
+          _firestore.settings = const Settings(
+            persistenceEnabled: true,
+            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+          );
+        } catch (e) {
+          debugPrint('⚠️ Firestore persistence setup failed: $e');
+          // Continue without persistence
+        }
       }
       
       debugPrint('✅ Firestore initialized successfully');
     } catch (e) {
-      debugPrint('❌ Firestore initialization error: $e');
-      throw Exception('Failed to initialize Firestore');
+      debugPrint('⚠️ Firestore initialization error: $e');
+      debugPrint('📱 App will continue in offline mode');
+      // Don't throw exception - allow app to continue in offline mode
     }
   }
 

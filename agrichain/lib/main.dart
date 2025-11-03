@@ -16,6 +16,7 @@ import 'screens/analytics_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/add_crop_screen.dart';
+import 'screens/downloads_screen.dart';
 import 'providers/app_state.dart';
 import 'config/app_initializer.dart';
 import 'models/firestore_models.dart';
@@ -370,6 +371,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     const MyCropsScreen(),
     const LoansScreen(),
     const MarketplaceScreen(),
+    const DownloadsScreen(),
     const ProfileScreen(),
   ];
 
@@ -379,6 +381,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     const WalletScreen(),
     const ProfileScreen(),
     const LoansScreen(),
+    const DownloadsScreen(),
     const AnalyticsScreen(),
   ];
 
@@ -403,6 +406,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       icon: Icon(Icons.shopping_cart_outlined),
       activeIcon: Icon(Icons.shopping_cart),
       label: 'Marketplace',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.download_outlined),
+      activeIcon: Icon(Icons.download),
+      label: 'Downloads',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.person_outline),
@@ -432,6 +440,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       icon: Icon(Icons.account_balance_outlined),
       activeIcon: Icon(Icons.account_balance),
       label: 'Loans',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.download_outlined),
+      activeIcon: Icon(Icons.download),
+      label: 'Downloads',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.analytics_outlined),
