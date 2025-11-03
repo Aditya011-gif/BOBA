@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
 import 'signup_screen.dart';
 
@@ -96,13 +94,11 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (credential.user != null && mounted) {
         debugPrint('✅ Firebase Auth successful: ${credential.user!.uid}');
-        debugPrint('📥 Loading user data from Firestore...');
-        
-        final appState = Provider.of<AppState>(context, listen: false);
-        await appState.loadUserData(credential.user!.uid);
-        
-        debugPrint('✅ Login complete, user data loaded');
+        debugPrint('� StreamBuilder will handle navigation and data loading');
         HapticFeedback.lightImpact();
+        // Note: Don't manually load user data or navigate here
+        // The StreamBuilder in main.dart will detect the auth state change
+        // and automatically load user data and navigate to MainScreen
       }
     } on FirebaseAuthException catch (e) {
       debugPrint('❌ Firebase Auth error: ${e.code} - ${e.message}');

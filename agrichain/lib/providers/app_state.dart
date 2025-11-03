@@ -394,8 +394,11 @@ class AppState extends ChangeNotifier {
   }
 
   void clearUser() {
+    debugPrint('🧹 clearUser() called - clearing user data');
+    debugPrint('📍 Stack trace: ${StackTrace.current}');
     _currentUser = null;
     _clearData();
+    notifyListeners();
   }
 
   Future<void> loadUserData(String firebaseUid) async {
