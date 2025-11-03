@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
@@ -13,6 +14,7 @@ import 'screens/profile_screen.dart';
 import 'screens/wallet_screen.dart';
 import 'screens/analytics_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/add_crop_screen.dart';
 import 'providers/app_state.dart';
 import 'config/app_initializer.dart';
@@ -47,6 +49,8 @@ class _AgriChainAppState extends State<AgriChainApp> {
   bool _isInitialized = false;
   bool _initializationFailed = false;
   String _errorMessage = '';
+  bool _isFirstTime = true;
+  bool _checkingFirstTime = true;
   final AppInitializer _appInitializer = AppInitializer();
 
   @override
@@ -57,10 +61,14 @@ class _AgriChainAppState extends State<AgriChainApp> {
 
   Future<void> _initializeApp() async {
     try {
+      // Check if this is the first time opening the app
+      await _checkFirstTimeUser();
+      
       final success = await _appInitializer.initialize();
       setState(() {
         _isInitialized = success;
         _initializationFailed = !success;
+        _checkingFirstTime = false;
         if (!success) {
           final results = _appInitializer.initializationResults;
           _errorMessage = results['error']?.toString() ?? 'Unknown initialization error';
@@ -70,9 +78,26 @@ class _AgriChainAppState extends State<AgriChainApp> {
       setState(() {
         _isInitialized = false;
         _initializationFailed = true;
+        _checkingFirstTime = false;
         _errorMessage = e.toString();
       });
     }
+  }
+
+  Future<void> _checkFirstTimeUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    setState(() {
+      _isFirstTime = !hasSeenOnboarding;
+    });
+  }
+
+  Future<void> _markOnboardingComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_onboarding', true);
+    setState(() {
+      _isFirstTime = false;
+    });
   }
 
   @override
@@ -113,8 +138,15 @@ class _AgriChainAppState extends State<AgriChainApp> {
       return _buildErrorScreen();
     }
     
-    if (!_isInitialized) {
+    if (!_isInitialized || _checkingFirstTime) {
       return _buildLoadingScreen();
+    }
+    
+    // Show onboarding for first-time users
+    if (_isFirstTime) {
+      return OnboardingScreen(
+        onComplete: _markOnboardingComplete,
+      );
     }
     
     return StreamBuilder<User?>(
