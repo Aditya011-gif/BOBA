@@ -91,6 +91,10 @@ class _LoansScreenState extends State<LoansScreen>
   Widget _buildMyLoanRequestsTab() {
     return Consumer<AppState>(
       builder: (context, appState, child) {
+        // Debug: Print current user ID
+        print('DEBUG: Current user ID: ${appState.currentUser?.id}');
+        print('DEBUG: Current user type: ${appState.currentUser?.userType}');
+        
         return StreamBuilder<QuerySnapshot>(
           stream: _firestore
               .collection('loan_requests')
@@ -98,8 +102,30 @@ class _LoansScreenState extends State<LoansScreen>
               .orderBy('createdAt', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
+            // Debug: Print query results
+            print('DEBUG: Connection state: ${snapshot.connectionState}');
+            print('DEBUG: Has data: ${snapshot.hasData}');
+            if (snapshot.hasData) {
+              print('DEBUG: Number of docs: ${snapshot.data!.docs.length}');
+              for (var doc in snapshot.data!.docs) {
+                final data = doc.data() as Map<String, dynamic>;
+                print('DEBUG: Loan request - ID: ${doc.id}, farmerId: ${data['farmerId']}, status: ${data['status']}');
+              }
+            }
+            if (snapshot.hasError) {
+              print('DEBUG: Query error: ${snapshot.error}');
+            }
+            
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildLoadingGrid();
+            }
+
+            if (snapshot.hasError) {
+              return _buildEmptyState(
+                'Error Loading Requests',
+                'There was an error loading your loan requests. Please try again.',
+                Icons.error,
+              );
             }
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

@@ -25,66 +25,72 @@ class ContractPdfService {
     Map<String, dynamic>? paymentDetails,
   }) async {
     final pdf = pw.Document();
-    final dateFormat = DateFormat('dd/MM/yyyy');
-    final timeFormat = DateFormat('dd/MM/yyyy HH:mm');
+    final dateFormat = DateFormat('dd MMMM yyyy');
+    final timeFormat = DateFormat('dd MMMM yyyy \'at\' HH:mm');
 
-    // Load Google Fonts with Unicode support
-    final font = await PdfGoogleFonts.openSansRegular();
+    // Load professional fonts
+    final regularFont = await PdfGoogleFonts.openSansRegular();
     final boldFont = await PdfGoogleFonts.openSansBold();
+    final italicFont = await PdfGoogleFonts.openSansItalic();
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.fromLTRB(50, 40, 50, 40),
+        header: (context) => _buildProfessionalHeader(regularFont, boldFont),
+        footer: (context) => _buildProfessionalFooter(regularFont, boldFont),
         build: (pw.Context context) {
           return [
-            // Header
-            _buildHeader(font, boldFont),
-            pw.SizedBox(height: 30),
-
-            // Contract Title
+            // Contract Title with proper spacing
+            pw.SizedBox(height: 20),
             pw.Center(
-              child: pw.Text(
-                'AGRICULTURAL PURCHASE CONTRACT',
-                style: pw.TextStyle(
-                  font: boldFont,
-                  fontSize: 18,
-                  color: PdfColors.green800,
-                ),
+              child: pw.Column(
+                children: [
+                  pw.Text(
+                    'AGRICULTURAL PURCHASE CONTRACT',
+                    style: pw.TextStyle(
+                      font: boldFont,
+                      fontSize: 16,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Container(
+                    width: 200,
+                    height: 2,
+                    color: PdfColors.black,
+                  ),
+                ],
               ),
             ),
-            pw.SizedBox(height: 20),
-
-            // Contract Details
-            _buildContractInfo(order, contractData, font, boldFont, timeFormat),
-            pw.SizedBox(height: 20),
-
-            // Parties Information
-            _buildPartiesInfo(buyer, seller, font, boldFont),
-            pw.SizedBox(height: 20),
-
-            // Product Details
-            _buildProductDetails(crop, order, font, boldFont, dateFormat),
-            pw.SizedBox(height: 20),
-
-            // Financial Details
-            _buildFinancialDetails(order, paymentDetails, font, boldFont),
-            pw.SizedBox(height: 20),
-
-            // Smart Contract Details
-            _buildSmartContractDetails(contractData, font, boldFont),
-            pw.SizedBox(height: 20),
-
-            // Terms and Conditions
-            _buildTermsAndConditions(contractData, font, boldFont, dateFormat),
             pw.SizedBox(height: 30),
 
-            // Signatures
-            _buildSignatureSection(buyer, seller, font, boldFont, timeFormat),
-            pw.SizedBox(height: 20),
+            // Contract Reference Information
+            _buildProfessionalContractInfo(order, contractData, regularFont, boldFont, timeFormat),
+            pw.SizedBox(height: 25),
 
-            // Footer
-            _buildFooter(font),
+            // Parties Section with proper legal formatting
+            _buildProfessionalPartiesSection(buyer, seller, regularFont, boldFont),
+            pw.SizedBox(height: 25),
+
+            // Product Specifications
+            _buildProfessionalProductSection(crop, order, regularFont, boldFont, dateFormat),
+            pw.SizedBox(height: 25),
+
+            // Financial Terms
+            _buildProfessionalFinancialSection(order, paymentDetails, regularFont, boldFont),
+            pw.SizedBox(height: 25),
+
+            // Smart Contract Integration
+            _buildProfessionalSmartContractSection(contractData, regularFont, boldFont),
+            pw.SizedBox(height: 25),
+
+            // Terms and Conditions with numbered clauses
+            _buildProfessionalTermsSection(contractData, regularFont, boldFont, italicFont, dateFormat),
+            pw.SizedBox(height: 30),
+
+            // Signature Section
+            _buildProfessionalSignatureSection(buyer, seller, regularFont, boldFont, timeFormat),
           ];
         },
       ),
@@ -93,13 +99,11 @@ class ContractPdfService {
     return pdf.save();
   }
 
-  static pw.Widget _buildHeader(pw.Font font, pw.Font boldFont) {
+  static pw.Widget _buildProfessionalHeader(pw.Font regularFont, pw.Font boldFont) {
     return pw.Container(
-      padding: const pw.EdgeInsets.all(16),
-      decoration: pw.BoxDecoration(
-        color: PdfColors.green50,
-        border: pw.Border.all(color: PdfColors.green800, width: 2),
-        borderRadius: pw.BorderRadius.circular(8),
+      padding: const pw.EdgeInsets.only(bottom: 10),
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 1)),
       ),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -111,14 +115,13 @@ class ContractPdfService {
                 _companyName,
                 style: pw.TextStyle(
                   font: boldFont,
-                  fontSize: 20,
-                  color: PdfColors.green800,
+                  fontSize: 14,
                 ),
               ),
-              pw.SizedBox(height: 4),
+              pw.SizedBox(height: 2),
               pw.Text(
                 _companyAddress,
-                style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey700),
+                style: pw.TextStyle(font: regularFont, fontSize: 9),
               ),
             ],
           ),
@@ -127,11 +130,11 @@ class ContractPdfService {
             children: [
               pw.Text(
                 'Email: $_companyEmail',
-                style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey700),
+                style: pw.TextStyle(font: regularFont, fontSize: 9),
               ),
               pw.Text(
                 'Phone: $_companyPhone',
-                style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey700),
+                style: pw.TextStyle(font: regularFont, fontSize: 9),
               ),
             ],
           ),
@@ -140,422 +143,627 @@ class ContractPdfService {
     );
   }
 
-  static pw.Widget _buildContractInfo(
+  static pw.Widget _buildProfessionalContractInfo(
     FirestoreOrder order,
     Map<String, dynamic> contractData,
-    pw.Font font,
+    pw.Font regularFont,
     pw.Font boldFont,
     DateFormat timeFormat,
   ) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.grey400),
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            'CONTRACT INFORMATION',
-            style: pw.TextStyle(font: boldFont, fontSize: 14, color: PdfColors.green800),
-          ),
-          pw.SizedBox(height: 8),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Contract ID:', order.id, font, boldFont),
-                  _buildInfoRow('Order ID:', order.id, font, boldFont),
-                  _buildInfoRow('Status:', order.status.name.toUpperCase(), font, boldFont),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Contract Date:', timeFormat.format(order.orderDate), font, boldFont),
-                  _buildInfoRow('Blockchain ID:', contractData['contractId'] ?? 'N/A', font, boldFont),
-                  _buildInfoRow('Transaction Hash:', _truncateHash(contractData['transactionHash'] ?? 'N/A'), font, boldFont),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'CONTRACT REFERENCE',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Table(
+          border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(120),
+            1: const pw.FlexColumnWidth(),
+          },
+          children: [
+            _buildTableRow('Contract Number:', order.id, regularFont, boldFont),
+            _buildTableRow('Contract Date:', timeFormat.format(order.orderDate), regularFont, boldFont),
+            _buildTableRow('Status:', order.status.name.toUpperCase(), regularFont, boldFont),
+            _buildTableRow('Blockchain ID:', contractData['contractId'] ?? 'Pending', regularFont, boldFont),
+            _buildTableRow('Transaction Hash:', _truncateHash(contractData['transactionHash'] ?? 'Pending'), regularFont, boldFont),
+          ],
+        ),
+      ],
     );
   }
 
-  static pw.Widget _buildPartiesInfo(
+  static pw.Widget _buildProfessionalPartiesSection(
     FirestoreUser buyer,
     FirestoreUser seller,
-    pw.Font font,
+    pw.Font regularFont,
     pw.Font boldFont,
   ) {
-    return pw.Row(
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Expanded(
-          child: pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              border: pw.Border.all(color: PdfColors.blue400),
-              borderRadius: pw.BorderRadius.circular(4),
-            ),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  'BUYER INFORMATION',
-                  style: pw.TextStyle(font: boldFont, fontSize: 12, color: PdfColors.blue800),
+        pw.Text(
+          'CONTRACTING PARTIES',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
+        ),
+        pw.SizedBox(height: 15),
+        
+        // Buyer Section
+        pw.Text(
+          '1. THE BUYER',
+          style: pw.TextStyle(font: boldFont, fontSize: 11),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(left: 20),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Name: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: buyer.name, style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
                 ),
-                pw.SizedBox(height: 8),
-                _buildInfoRow('Name:', buyer.name, font, boldFont),
-                _buildInfoRow('Email:', buyer.email, font, boldFont),
-                _buildInfoRow('Phone:', buyer.phone ?? 'N/A', font, boldFont),
-                _buildInfoRow('Location:', buyer.location ?? 'N/A', font, boldFont),
-                _buildInfoRow('Wallet:', _truncateAddress(buyer.walletAddress ?? 'N/A'), font, boldFont),
-              ],
-            ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Email: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: buyer.email, style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Phone: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: buyer.phone ?? 'Not provided', style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Location: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: buyer.location ?? 'Not specified', style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Wallet Address: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: _truncateAddress(buyer.walletAddress ?? 'Not connected'), style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        pw.SizedBox(width: 16),
-        pw.Expanded(
-          child: pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              border: pw.Border.all(color: PdfColors.orange400),
-              borderRadius: pw.BorderRadius.circular(4),
-            ),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  'SELLER INFORMATION',
-                  style: pw.TextStyle(font: boldFont, fontSize: 12, color: PdfColors.orange800),
+        
+        pw.SizedBox(height: 15),
+        
+        // Seller Section
+        pw.Text(
+          '2. THE SELLER',
+          style: pw.TextStyle(font: boldFont, fontSize: 11),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(left: 20),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Name: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: seller.name, style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
                 ),
-                pw.SizedBox(height: 8),
-                _buildInfoRow('Name:', seller.name, font, boldFont),
-                _buildInfoRow('Email:', seller.email, font, boldFont),
-                _buildInfoRow('Phone:', seller.phone ?? 'N/A', font, boldFont),
-                _buildInfoRow('Location:', seller.location ?? 'N/A', font, boldFont),
-                _buildInfoRow('Wallet:', _truncateAddress(seller.walletAddress ?? 'N/A'), font, boldFont),
-              ],
-            ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Email: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: seller.email, style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Phone: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: seller.phone ?? 'Not provided', style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Location: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: seller.location ?? 'Not specified', style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(text: 'Wallet Address: ', style: pw.TextStyle(font: boldFont, fontSize: 10)),
+                    pw.TextSpan(text: _truncateAddress(seller.walletAddress ?? 'Not connected'), style: pw.TextStyle(font: regularFont, fontSize: 10)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  static pw.Widget _buildProductDetails(
+  static pw.Widget _buildProfessionalProductSection(
     FirestoreCrop crop,
     FirestoreOrder order,
-    pw.Font font,
+    pw.Font regularFont,
     pw.Font boldFont,
     DateFormat dateFormat,
   ) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.green400),
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            'PRODUCT DETAILS',
-            style: pw.TextStyle(font: boldFont, fontSize: 14, color: PdfColors.green800),
-          ),
-          pw.SizedBox(height: 8),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Product Name:', crop.name, font, boldFont),
-                  _buildInfoRow('Category:', crop.category?.name.toUpperCase() ?? 'N/A', font, boldFont),
-                  _buildInfoRow('Quality Grade:', crop.qualityGrade.name.toUpperCase(), font, boldFont),
-                  _buildInfoRow('Quantity:', order.quantity, font, boldFont),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Unit Price:', '₹${crop.price.toStringAsFixed(2)}', font, boldFont),
-                  _buildInfoRow('Harvest Date:', dateFormat.format(crop.harvestDate), font, boldFont),
-                  _buildInfoRow('Location:', crop.location, font, boldFont),
-                  _buildInfoRow('NFT Token:', crop.nftTokenId ?? 'N/A', font, boldFont),
-                ],
-              ),
-            ],
-          ),
-          if (crop.certifications.isNotEmpty) ...[
-            pw.SizedBox(height: 8),
-            pw.Text(
-              'Certifications:',
-              style: pw.TextStyle(font: boldFont, fontSize: 10),
-            ),
-            pw.SizedBox(height: 4),
-            pw.Text(
-              crop.certifications.map((cert) => cert['type'] ?? 'Unknown').join(', '),
-              style: pw.TextStyle(font: font, fontSize: 10),
-            ),
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'PRODUCT SPECIFICATIONS',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Table(
+          border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(120),
+            1: const pw.FlexColumnWidth(),
+          },
+          children: [
+            _buildTableRow('Product Name:', crop.name, regularFont, boldFont),
+            _buildTableRow('Category:', crop.category?.name.toUpperCase() ?? 'Not specified', regularFont, boldFont),
+            _buildTableRow('Quality Grade:', crop.qualityGrade.name.toUpperCase(), regularFont, boldFont),
+            _buildTableRow('Quantity:', order.quantity, regularFont, boldFont),
+            _buildTableRow('Unit Price:', '₹${crop.price.toStringAsFixed(2)}', regularFont, boldFont),
+            _buildTableRow('Total Amount:', '₹${order.totalAmount.toStringAsFixed(2)}', regularFont, boldFont),
+            _buildTableRow('Harvest Date:', dateFormat.format(crop.harvestDate), regularFont, boldFont),
+            _buildTableRow('Origin Location:', crop.location, regularFont, boldFont),
+            _buildTableRow('NFT Token ID:', crop.nftTokenId ?? 'Not minted', regularFont, boldFont),
           ],
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildFinancialDetails(
-    FirestoreOrder order,
-    Map<String, dynamic>? paymentDetails,
-    pw.Font font,
-    pw.Font boldFont,
-  ) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.purple400),
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
+        ),
+        if (crop.certifications.isNotEmpty) ...[
+          pw.SizedBox(height: 10),
           pw.Text(
-            'FINANCIAL DETAILS',
-            style: pw.TextStyle(font: boldFont, fontSize: 14, color: PdfColors.purple800),
-          ),
-          pw.SizedBox(height: 8),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Total Amount:', '₹${order.totalAmount.toStringAsFixed(2)}', font, boldFont),
-                  _buildInfoRow('Currency:', 'INR', font, boldFont),
-                  if (paymentDetails != null) ...[
-                    _buildInfoRow('Payment Method:', paymentDetails['payment_method'] ?? 'N/A', font, boldFont),
-                    _buildInfoRow('Transaction ID:', paymentDetails['transaction_id'] ?? 'N/A', font, boldFont),
-                  ],
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Escrow Status:', 'LOCKED', font, boldFont),
-                  _buildInfoRow('Release Condition:', 'On Delivery Confirmation', font, boldFont),
-                  if (paymentDetails?['upi_id'] != null)
-                    _buildInfoRow('UPI ID:', paymentDetails!['upi_id'], font, boldFont),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildSmartContractDetails(
-    Map<String, dynamic> contractData,
-    pw.Font font,
-    pw.Font boldFont,
-  ) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
-      decoration: pw.BoxDecoration(
-        color: PdfColors.grey100,
-        border: pw.Border.all(color: PdfColors.grey400),
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            'SMART CONTRACT DETAILS',
-            style: pw.TextStyle(font: boldFont, fontSize: 14, color: PdfColors.grey800),
-          ),
-          pw.SizedBox(height: 8),
-          _buildInfoRow('Contract Address:', contractData['contractAddress'] ?? 'N/A', font, boldFont),
-          _buildInfoRow('Escrow Address:', contractData['escrowAddress'] ?? 'N/A', font, boldFont),
-          _buildInfoRow('Block Number:', contractData['blockNumber']?.toString() ?? 'N/A', font, boldFont),
-          _buildInfoRow('Gas Used:', contractData['gasUsed'] ?? 'N/A', font, boldFont),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            'Smart Contract Features:',
+            'CERTIFICATIONS:',
             style: pw.TextStyle(font: boldFont, fontSize: 10),
           ),
-          pw.SizedBox(height: 4),
+          pw.SizedBox(height: 5),
           pw.Text(
-            '• Automated escrow with funds locked until delivery\n'
-            '• Quality verification and dispute resolution\n'
-            '• Automatic NFT ownership transfer on completion\n'
-            '• Penalty mechanism for late delivery\n'
-            '• Immutable transaction record on blockchain',
-            style: pw.TextStyle(font: font, fontSize: 9),
+            crop.certifications.map((cert) => '• ${cert['type'] ?? 'Unknown certification'}').join('\n'),
+            style: pw.TextStyle(font: regularFont, fontSize: 10),
           ),
         ],
-      ),
+      ],
     );
   }
 
-  static pw.Widget _buildTermsAndConditions(
-    Map<String, dynamic> contractData,
-    pw.Font font,
+  static pw.Widget _buildProfessionalFinancialSection(
+    FirestoreOrder order,
+    Map<String, dynamic>? paymentDetails,
+    pw.Font regularFont,
     pw.Font boldFont,
+  ) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'FINANCIAL TERMS',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Table(
+          border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(120),
+            1: const pw.FlexColumnWidth(),
+          },
+          children: [
+            _buildTableRow('Total Amount:', '₹${order.totalAmount.toStringAsFixed(2)}', regularFont, boldFont),
+            _buildTableRow('Currency:', 'Indian Rupees (INR)', regularFont, boldFont),
+            _buildTableRow('Payment Method:', paymentDetails?['payment_method'] ?? 'Digital Payment', regularFont, boldFont),
+            _buildTableRow('Transaction ID:', paymentDetails?['transaction_id'] ?? 'Pending', regularFont, boldFont),
+            _buildTableRow('Escrow Status:', 'FUNDS SECURED', regularFont, boldFont),
+            _buildTableRow('Release Condition:', 'Upon successful delivery confirmation', regularFont, boldFont),
+            if (paymentDetails?['upi_id'] != null)
+              _buildTableRow('UPI ID:', paymentDetails!['upi_id'], regularFont, boldFont),
+          ],
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildProfessionalSmartContractSection(
+    Map<String, dynamic> contractData,
+    pw.Font regularFont,
+    pw.Font boldFont,
+  ) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'BLOCKCHAIN INTEGRATION',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Table(
+          border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(120),
+            1: const pw.FlexColumnWidth(),
+          },
+          children: [
+            _buildTableRow('Contract Address:', contractData['contractAddress'] ?? 'Deploying...', regularFont, boldFont),
+            _buildTableRow('Escrow Address:', contractData['escrowAddress'] ?? 'Initializing...', regularFont, boldFont),
+            _buildTableRow('Block Number:', contractData['blockNumber']?.toString() ?? 'Pending', regularFont, boldFont),
+            _buildTableRow('Gas Fee:', contractData['gasUsed'] ?? 'Calculating...', regularFont, boldFont),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Text(
+          'SMART CONTRACT FEATURES:',
+          style: pw.TextStyle(font: boldFont, fontSize: 10),
+        ),
+        pw.SizedBox(height: 5),
+        pw.Text(
+          '• Automated escrow with secure fund management\n'
+          '• Quality verification and dispute resolution mechanism\n'
+          '• Automatic NFT ownership transfer upon completion\n'
+          '• Penalty enforcement for contract violations\n'
+          '• Immutable transaction record on blockchain\n'
+          '• Multi-signature approval for fund release',
+          style: pw.TextStyle(font: regularFont, fontSize: 10),
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildProfessionalTermsSection(
+    Map<String, dynamic> contractData,
+    pw.Font regularFont,
+    pw.Font boldFont,
+    pw.Font italicFont,
     DateFormat dateFormat,
   ) {
     final terms = contractData['contractData']?['terms'] as Map<String, dynamic>?;
     
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.red400),
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            'TERMS AND CONDITIONS',
-            style: pw.TextStyle(font: boldFont, fontSize: 14, color: PdfColors.red800),
-          ),
-          pw.SizedBox(height: 8),
-          if (terms != null) ...[
-            _buildInfoRow('Delivery Deadline:', 
-              terms['deliveryDeadline'] != null 
-                ? dateFormat.format(DateTime.parse(terms['deliveryDeadline']))
-                : 'N/A', 
-              font, boldFont),
-            _buildInfoRow('Quality Standards:', terms['qualityStandards'] ?? 'Standard quality', font, boldFont),
-            _buildInfoRow('Penalty Rate:', '${((terms['penaltyRate'] ?? 0.0) * 100).toStringAsFixed(1)}% for late delivery', font, boldFont),
-            _buildInfoRow('Refund Policy:', terms['refundPolicy'] ?? 'As per platform policy', font, boldFont),
-          ],
-          pw.SizedBox(height: 8),
-          pw.Text(
-            'General Terms:',
-            style: pw.TextStyle(font: boldFont, fontSize: 10),
-          ),
-          pw.SizedBox(height: 4),
-          pw.Text(
-            '1. This contract is governed by the smart contract deployed on the blockchain.\n'
-            '2. All disputes will be resolved through the platform\'s dispute resolution mechanism.\n'
-            '3. The buyer must confirm delivery within 7 days of receiving the goods.\n'
-            '4. Quality standards must be met as per the product specifications.\n'
-            '5. Late delivery may result in penalties as specified in the contract terms.\n'
-            '6. This contract is legally binding and enforceable under applicable laws.',
-            style: pw.TextStyle(font: font, fontSize: 9),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildSignatureSection(
-    FirestoreUser buyer,
-    FirestoreUser seller,
-    pw.Font font,
-    pw.Font boldFont,
-    DateFormat timeFormat,
-  ) {
-    return pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              'BUYER SIGNATURE',
-              style: pw.TextStyle(font: boldFont, fontSize: 12),
-            ),
-            pw.SizedBox(height: 20),
-            pw.Container(
-              width: 200,
-              height: 1,
-              color: PdfColors.grey600,
-            ),
-            pw.SizedBox(height: 4),
-            pw.Text(
-              buyer.name,
-              style: pw.TextStyle(font: font, fontSize: 10),
-            ),
-            pw.Text(
-              'Date: ${timeFormat.format(DateTime.now())}',
-              style: pw.TextStyle(font: font, fontSize: 8, color: PdfColors.grey600),
-            ),
-          ],
+        pw.Text(
+          'TERMS AND CONDITIONS',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
         ),
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              'SELLER SIGNATURE',
-              style: pw.TextStyle(font: boldFont, fontSize: 12),
-            ),
-            pw.SizedBox(height: 20),
-            pw.Container(
-              width: 200,
-              height: 1,
-              color: PdfColors.grey600,
-            ),
-            pw.SizedBox(height: 4),
-            pw.Text(
-              seller.name,
-              style: pw.TextStyle(font: font, fontSize: 10),
-            ),
-            pw.Text(
-              'Date: ${timeFormat.format(DateTime.now())}',
-              style: pw.TextStyle(font: font, fontSize: 8, color: PdfColors.grey600),
-            ),
-          ],
+        pw.SizedBox(height: 15),
+        
+        // Specific Terms
+        if (terms != null) ...[
+          pw.Text(
+            'SPECIFIC CONTRACT TERMS:',
+            style: pw.TextStyle(font: boldFont, fontSize: 11),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
+            columnWidths: {
+              0: const pw.FixedColumnWidth(120),
+              1: const pw.FlexColumnWidth(),
+            },
+            children: [
+              _buildTableRow('Delivery Deadline:', 
+                terms['deliveryDeadline'] != null 
+                  ? dateFormat.format(DateTime.parse(terms['deliveryDeadline']))
+                  : 'As per mutual agreement', 
+                regularFont, boldFont),
+              _buildTableRow('Quality Standards:', terms['qualityStandards'] ?? 'As per product specifications', regularFont, boldFont),
+              _buildTableRow('Late Delivery Penalty:', '${((terms['penaltyRate'] ?? 0.05) * 100).toStringAsFixed(1)}% per day', regularFont, boldFont),
+              _buildTableRow('Refund Policy:', terms['refundPolicy'] ?? 'Full refund if quality standards not met', regularFont, boldFont),
+            ],
+          ),
+          pw.SizedBox(height: 15),
+        ],
+        
+        // General Terms
+        pw.Text(
+          'GENERAL TERMS AND CONDITIONS:',
+          style: pw.TextStyle(font: boldFont, fontSize: 11),
+        ),
+        pw.SizedBox(height: 8),
+        
+        ..._buildNumberedTerms(regularFont, boldFont),
+        
+        pw.SizedBox(height: 15),
+        pw.Text(
+          'By executing this contract, both parties acknowledge that they have read, understood, and agree to be bound by all terms and conditions stated herein.',
+          style: pw.TextStyle(font: italicFont, fontSize: 10),
         ),
       ],
     );
   }
 
-  static pw.Widget _buildFooter(pw.Font font) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(8),
-      decoration: pw.BoxDecoration(
-        color: PdfColors.grey100,
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Center(
-        child: pw.Text(
-          'This contract is digitally generated and cryptographically secured on the blockchain.\n'
-          'For verification, use the contract ID and transaction hash provided above.\n'
-          'Generated on ${DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now())}',
-          style: pw.TextStyle(font: font, fontSize: 8, color: PdfColors.grey600),
-          textAlign: pw.TextAlign.center,
+  static List<pw.Widget> _buildNumberedTerms(pw.Font regularFont, pw.Font boldFont) {
+    final terms = [
+      'This contract is governed by the smart contract deployed on the blockchain network and is legally binding under applicable laws.',
+      'All disputes shall be resolved through the platform\'s automated dispute resolution mechanism before escalating to legal proceedings.',
+      'The buyer must confirm delivery within seven (7) days of receiving the goods, failing which delivery shall be deemed accepted.',
+      'Quality standards must be met as per the product specifications outlined in this contract.',
+      'Late delivery may result in penalties as specified in the contract terms, automatically enforced by the smart contract.',
+      'Both parties warrant that they have the legal capacity and authority to enter into this contract.',
+      'This contract may only be modified through mutual written consent and blockchain transaction confirmation.',
+      'Force majeure events shall be handled as per platform policies and may result in contract suspension or termination.',
+      'All personal data shall be handled in accordance with applicable privacy laws and platform policies.',
+      'This contract shall remain in effect until all obligations are fulfilled or the contract is terminated as per these terms.',
+    ];
+
+    return terms.asMap().entries.map((entry) {
+      final index = entry.key + 1;
+      final term = entry.value;
+      
+      return pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 8),
+        child: pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.SizedBox(
+              width: 25,
+              child: pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: boldFont, fontSize: 10),
+              ),
+            ),
+            pw.Expanded(
+              child: pw.Text(
+                term,
+                style: pw.TextStyle(font: regularFont, fontSize: 10),
+              ),
+            ),
+          ],
         ),
-      ),
+      );
+    }).toList();
+  }
+
+  static pw.Widget _buildProfessionalSignatureSection(
+    FirestoreUser buyer,
+    FirestoreUser seller,
+    pw.Font regularFont,
+    pw.Font boldFont,
+    DateFormat timeFormat,
+  ) {
+    final currentDate = timeFormat.format(DateTime.now());
+    
+    return pw.Column(
+      children: [
+        pw.Text(
+          'SIGNATURES',
+          style: pw.TextStyle(font: boldFont, fontSize: 12, letterSpacing: 0.5),
+        ),
+        pw.SizedBox(height: 20),
+        
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            // Buyer Signature
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'THE BUYER:',
+                    style: pw.TextStyle(font: boldFont, fontSize: 11),
+                  ),
+                  pw.SizedBox(height: 30),
+                  pw.Container(
+                    width: 200,
+                    height: 1,
+                    color: PdfColors.black,
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Text(
+                    buyer.name,
+                    style: pw.TextStyle(font: boldFont, fontSize: 10),
+                  ),
+                  pw.Text(
+                    'Digital Signature',
+                    style: pw.TextStyle(font: regularFont, fontSize: 9),
+                  ),
+                  pw.Text(
+                    'Date: $currentDate',
+                    style: pw.TextStyle(font: regularFont, fontSize: 9),
+                  ),
+                ],
+              ),
+            ),
+            
+            pw.SizedBox(width: 40),
+            
+            // Seller Signature
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'THE SELLER:',
+                    style: pw.TextStyle(font: boldFont, fontSize: 11),
+                  ),
+                  pw.SizedBox(height: 30),
+                  pw.Container(
+                    width: 200,
+                    height: 1,
+                    color: PdfColors.black,
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Text(
+                    seller.name,
+                    style: pw.TextStyle(font: boldFont, fontSize: 10),
+                  ),
+                  pw.Text(
+                    'Digital Signature',
+                    style: pw.TextStyle(font: regularFont, fontSize: 9),
+                  ),
+                  pw.Text(
+                    'Date: $currentDate',
+                    style: pw.TextStyle(font: regularFont, fontSize: 9),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        
+        pw.SizedBox(height: 30),
+        
+        // Witness/Platform Signature
+        pw.Center(
+          child: pw.Column(
+            children: [
+              pw.Text(
+                'WITNESSED BY:',
+                style: pw.TextStyle(font: boldFont, fontSize: 11),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Container(
+                width: 200,
+                height: 1,
+                color: PdfColors.black,
+              ),
+              pw.SizedBox(height: 5),
+              pw.Text(
+                _companyName,
+                style: pw.TextStyle(font: boldFont, fontSize: 10),
+              ),
+              pw.Text(
+                'Platform Authority',
+                style: pw.TextStyle(font: regularFont, fontSize: 9),
+              ),
+              pw.Text(
+                'Date: $currentDate',
+                style: pw.TextStyle(font: regularFont, fontSize: 9),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  static pw.Widget _buildInfoRow(String label, String value, pw.Font font, pw.Font boldFont) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 4),
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.SizedBox(
-            width: 80,
-            child: pw.Text(
-              label,
-              style: pw.TextStyle(font: boldFont, fontSize: 9),
-            ),
+  static pw.TableRow _buildTableRow(String label, String value, pw.Font regularFont, pw.Font boldFont) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(
+            label,
+            style: pw.TextStyle(font: boldFont, fontSize: 10),
           ),
-          pw.Expanded(
-            child: pw.Text(
-              value,
-              style: pw.TextStyle(font: font, fontSize: 9),
-            ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(
+            value,
+            style: pw.TextStyle(font: regularFont, fontSize: 10),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildProfessionalFooter(pw.Font regularFont, pw.Font boldFont) {
+    final currentDateTime = DateFormat('dd MMMM yyyy, HH:mm:ss').format(DateTime.now());
+    
+    return pw.Column(
+      children: [
+        pw.Container(
+          width: double.infinity,
+          height: 1,
+          color: PdfColors.black,
+        ),
+        pw.SizedBox(height: 15),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'DIGITAL VERIFICATION',
+                  style: pw.TextStyle(font: boldFont, fontSize: 10),
+                ),
+                pw.SizedBox(height: 5),
+                pw.Text(
+                  '✓ Blockchain Secured',
+                  style: pw.TextStyle(font: regularFont, fontSize: 9),
+                ),
+                pw.Text(
+                  '✓ Cryptographically Signed',
+                  style: pw.TextStyle(font: regularFont, fontSize: 9),
+                ),
+                pw.Text(
+                  '✓ Immutable Record',
+                  style: pw.TextStyle(font: regularFont, fontSize: 9),
+                ),
+              ],
+            ),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Text(
+                  'DOCUMENT INFORMATION',
+                  style: pw.TextStyle(font: boldFont, fontSize: 10),
+                ),
+                pw.SizedBox(height: 5),
+                pw.Text(
+                  'Generated: $currentDateTime',
+                  style: pw.TextStyle(font: regularFont, fontSize: 9),
+                ),
+                pw.Text(
+                  'Platform: $_companyName',
+                  style: pw.TextStyle(font: regularFont, fontSize: 9),
+                ),
+                pw.Text(
+                  'Version: 2.0',
+                  style: pw.TextStyle(font: regularFont, fontSize: 9),
+                ),
+              ],
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Center(
+          child: pw.Text(
+            'This contract is legally binding and enforceable under applicable laws.\n'
+            'For verification and dispute resolution, please contact platform support.',
+            style: pw.TextStyle(font: regularFont, fontSize: 8),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+      ],
     );
   }
 

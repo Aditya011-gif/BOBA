@@ -901,6 +901,48 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildDetailItem(
+                'Quality Grade',
+                _getQualityGradeText(widget.crop.qualityGrade),
+                Icons.grade,
+              ),
+            ),
+            Expanded(
+              child: _buildDetailItem(
+                'Crop Type',
+                _getCropTypeText(widget.crop.cropType),
+                Icons.agriculture,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildDetailItem(
+                'Category',
+                _getCategoryText(widget.crop.category),
+                Icons.category,
+              ),
+            ),
+            Expanded(
+              child: _buildDetailItem(
+                'Certifications',
+                '${widget.crop.certifications.length} cert${widget.crop.certifications.length != 1 ? 's' : ''}',
+                Icons.verified,
+              ),
+            ),
+          ],
+        ),
+        if (widget.crop.certifications.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _buildCertificationsSection(),
+        ],
       ],
     );
   }
@@ -1512,9 +1554,12 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
       // Check if widget is still mounted before showing dialog
       if (!mounted) return;
       
+      // Store context reference before async operations
+      final currentContext = context;
+      
       // Show loading indicator
       showDialog(
-        context: context,
+        context: currentContext,
         barrierDismissible: false,
         builder: (context) => const AlertDialog(
           content: Row(
@@ -1527,11 +1572,32 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
         ),
       );
 
-      final appState = Provider.of<AppState>(context, listen: false);
+      final appState = Provider.of<AppState>(currentContext, listen: false);
       
-      // Find the order and crop data
-      final order = appState.orders.firstWhere((o) => o.id == contractId);
-      final crop = appState.crops.firstWhere((c) => c.id == order.cropId);
+      // Find the order and crop data with better error handling
+      FirestoreOrder? order;
+      FirestoreCrop? crop;
+      
+      try {
+        order = appState.orders.firstWhere((o) => o.id == contractId);
+        crop = appState.crops.firstWhere((c) => c.id == order?.cropId);
+      } catch (e) {
+        // If order or crop not found, close dialog and show error
+        if (mounted && Navigator.canPop(currentContext)) {
+          Navigator.pop(currentContext);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(currentContext).showSnackBar(
+            const SnackBar(
+              content: Text('Error: Order or crop data not found'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+      
       final buyer = appState.currentUser!;
       
       // Create a mock seller user from crop data
@@ -1581,7 +1647,9 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
       if (!mounted) return;
       
       // Close loading dialog
-      Navigator.pop(context);
+      if (Navigator.canPop(currentContext)) {
+        Navigator.pop(currentContext);
+      }
 
       // Save and share PDF
       await ContractPdfService.shareOrPrintPdf(pdfBytes, fileName);
@@ -1590,37 +1658,44 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
       if (!mounted) return;
       
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Text('Contract PDF generated successfully!'),
-            ],
+      if (mounted) {
+        ScaffoldMessenger.of(currentContext).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Contract PDF generated successfully!'),
+              ],
+            ),
+            backgroundColor: AppTheme.primaryGreen,
+            duration: const Duration(seconds: 3),
           ),
-          backgroundColor: AppTheme.primaryGreen,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+        );
+      }
 
     } catch (e) {
       // Check if widget is still mounted before showing error
       if (!mounted) return;
       
+      // Store context reference
+      final currentContext = context;
+      
       // Close loading dialog if open
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+      if (Navigator.canPop(currentContext)) {
+        Navigator.pop(currentContext);
       }
       
       // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error generating contract: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(currentContext).showSnackBar(
+          SnackBar(
+            content: Text('Error generating contract: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -1649,6 +1724,173 @@ class _CropDetailsSheetState extends State<_CropDetailsSheet> {
         ],
       ),
     );
+  }
+
+  String _getQualityGradeText(QualityGrade grade) {
+    switch (grade) {
+      case QualityGrade.premium:
+        return 'Premium';
+      case QualityGrade.grade1:
+        return 'Grade 1';
+      case QualityGrade.grade2:
+        return 'Grade 2';
+      case QualityGrade.standard:
+        return 'Standard';
+    }
+  }
+
+  String _getCropTypeText(CropType? cropType) {
+    if (cropType == null) return 'Not specified';
+    switch (cropType) {
+      case CropType.wheat:
+        return 'Wheat';
+      case CropType.rice:
+        return 'Rice';
+      case CropType.potato:
+        return 'Potato';
+      case CropType.tomato:
+        return 'Tomato';
+      case CropType.onion:
+        return 'Onion';
+      case CropType.maize:
+        return 'Maize';
+      case CropType.mango:
+        return 'Mango';
+      case CropType.apple:
+        return 'Apple';
+      case CropType.banana:
+        return 'Banana';
+      case CropType.cotton:
+        return 'Cotton';
+      case CropType.sugarcane:
+        return 'Sugarcane';
+      case CropType.soybean:
+        return 'Soybean';
+    }
+  }
+
+  String _getCategoryText(CropCategory? category) {
+    if (category == null) return 'Not specified';
+    switch (category) {
+      case CropCategory.grains:
+        return 'Grains';
+      case CropCategory.vegetables:
+        return 'Vegetables';
+      case CropCategory.fruits:
+        return 'Fruits';
+      case CropCategory.pulses:
+        return 'Pulses';
+      case CropCategory.spices:
+        return 'Spices';
+      case CropCategory.oilseeds:
+        return 'Oilseeds';
+    }
+  }
+
+  Widget _buildCertificationsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Certifications',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppTheme.darkGrey,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGreen.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.primaryGreen.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            children: widget.crop.certifications.map((cert) {
+              final certType = cert['type'] as String? ?? 'Unknown';
+              final certNumber = cert['number'] as String? ?? 'N/A';
+              final issueDate = cert['issueDate'] as String? ?? 'N/A';
+              final expiryDate = cert['expiryDate'] as String? ?? 'N/A';
+              
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.grey.withOpacity(0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.verified,
+                          color: AppTheme.primaryGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getCertificationTypeText(certType),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.darkGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Cert. No: $certNumber',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.grey,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          'Valid till: $expiryDate',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getCertificationTypeText(String type) {
+    switch (type.toLowerCase()) {
+      case 'organic':
+        return 'Organic Certification';
+      case 'fssai':
+        return 'FSSAI Certification';
+      case 'agmark':
+        return 'AGMARK Certification';
+      case 'iso':
+        return 'ISO Certification';
+      case 'gmp':
+        return 'GMP Certification';
+      case 'haccp':
+        return 'HACCP Certification';
+      default:
+        return type.toUpperCase();
+    }
   }
 }
 
@@ -2849,9 +3091,12 @@ class _OrderCard extends StatelessWidget {
 
   Future<void> _downloadOrderContract(BuildContext context, FirestoreOrder order) async {
     try {
+      // Store context reference before async operations
+      final currentContext = context;
+      
       // Show loading indicator
       showDialog(
-        context: context,
+        context: currentContext,
         barrierDismissible: false,
         builder: (context) => const AlertDialog(
           content: Row(
@@ -2864,10 +3109,27 @@ class _OrderCard extends StatelessWidget {
         ),
       );
 
-      final appState = Provider.of<AppState>(context, listen: false);
+      final appState = Provider.of<AppState>(currentContext, listen: false);
       
-      // Find the crop data
-      final crop = appState.crops.firstWhere((c) => c.id == order.cropId);
+      // Find the crop data with better error handling
+      FirestoreCrop? crop;
+      try {
+        crop = appState.crops.firstWhere((c) => c.id == order.cropId);
+      } catch (e) {
+        // If crop not found, close dialog and show error
+        if (Navigator.canPop(currentContext)) {
+          Navigator.pop(currentContext);
+        }
+        ScaffoldMessenger.of(currentContext).showSnackBar(
+          const SnackBar(
+            content: Text('Error: Crop data not found'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+      
       final buyer = appState.currentUser!;
       
       // Create a mock seller user from order data
@@ -2915,46 +3177,45 @@ class _OrderCard extends StatelessWidget {
       final fileName = ContractPdfService.generateContractFileName(order.id);
 
       // Close loading dialog
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+      if (Navigator.canPop(currentContext)) {
+        Navigator.pop(currentContext);
       }
 
       // Save and share PDF
       await ContractPdfService.shareOrPrintPdf(pdfBytes, fileName);
 
       // Show success message
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Contract PDF generated successfully!'),
-              ],
-            ),
-            backgroundColor: AppTheme.primaryGreen,
-            duration: const Duration(seconds: 3),
+      ScaffoldMessenger.of(currentContext).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 8),
+              Text('Contract PDF generated successfully!'),
+            ],
           ),
-        );
-      }
+          backgroundColor: AppTheme.primaryGreen,
+          duration: const Duration(seconds: 3),
+        ),
+      );
 
     } catch (e) {
+      // Store context reference
+      final currentContext = context;
+      
       // Close loading dialog if open
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+      if (Navigator.canPop(currentContext)) {
+        Navigator.pop(currentContext);
       }
       
       // Show error message
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error generating contract: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(currentContext).showSnackBar(
+        SnackBar(
+          content: Text('Error generating contract: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
     }
   }
 
@@ -3021,7 +3282,7 @@ class _FilterSheetState extends State<_FilterSheet> {
             ),
           ),
           Expanded(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -3037,34 +3298,36 @@ class _FilterSheetState extends State<_FilterSheet> {
                   _buildCategorySection(),
                   const SizedBox(height: 24),
                   _buildSortSection(),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedCategory = 'All';
-                              _sortBy = 'Recent';
-                            });
-                          },
-                          child: const Text('Reset'),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            widget.onApply(_selectedCategory, _sortBy);
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Apply'),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedCategory = 'All';
+                        _sortBy = 'Recent';
+                      });
+                    },
+                    child: const Text('Reset'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      widget.onApply(_selectedCategory, _sortBy);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Apply'),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

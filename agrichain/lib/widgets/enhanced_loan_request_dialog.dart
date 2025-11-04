@@ -25,6 +25,7 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
   // Form Controllers
   final _amountController = TextEditingController();
   final _farmSizeController = TextEditingController();
+  final _cropGradeController = TextEditingController(); // Added for crop grade
   final _descriptionController = TextEditingController();
 
   // Dropdown values
@@ -1107,6 +1108,11 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
         throw Exception('User not logged in');
       }
 
+      // Debug: Print user information
+      print('DEBUG LOAN SUBMIT: User ID: ${user.id}');
+      print('DEBUG LOAN SUBMIT: User Name: ${user.name}');
+      print('DEBUG LOAN SUBMIT: User Type: ${user.userType}');
+
       final loanRequestId = FirebaseFirestore.instance.collection('loan_requests').doc().id;
       
       final loanRequestData = {
@@ -1118,6 +1124,7 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
         'loanAmount': double.parse(_amountController.text),
         'purpose': _selectedPurpose,
         'cropType': _selectedCropType,
+        'cropGrade': _cropGradeController.text, // Added cropGrade
         'farmSize': _farmSizeController.text,
         'repaymentPeriod': _selectedRepaymentPeriod,
         'urgency': _urgency,
@@ -1135,10 +1142,16 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
         'collateralLocked': false, // Will be set to true when loan is approved
       };
 
+      // Debug: Print loan request data
+      print('DEBUG LOAN SUBMIT: Loan Request ID: $loanRequestId');
+      print('DEBUG LOAN SUBMIT: Farmer ID in data: ${loanRequestData['farmerId']}');
+
       await FirebaseFirestore.instance
           .collection('loan_requests')
           .doc(loanRequestId)
           .set(loanRequestData);
+
+      print('DEBUG LOAN SUBMIT: Successfully saved to Firestore');
 
       if (mounted) {
         Navigator.pop(context);
@@ -1150,6 +1163,7 @@ class _EnhancedLoanRequestDialogState extends State<EnhancedLoanRequestDialog> {
         );
       }
     } catch (e) {
+      print('DEBUG LOAN SUBMIT: Error - $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

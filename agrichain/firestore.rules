@@ -56,6 +56,12 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
     
+    // Allow authenticated users to read and write loan request documents
+    match /loan_requests/{loanRequestId} {
+      allow read, write: if request.auth != null;
+      allow list: if request.auth != null;
+    }
+    
     // Allow authenticated users to read and write loan offer documents
     match /loan_offers/{offerId} {
       allow read, write: if request.auth != null;
